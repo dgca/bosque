@@ -1,0 +1,30 @@
+{
+  "name": "bosque",
+  "version": "0.1.2",
+  "description": "Simple, Flux state management.",
+  "main": "lib/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "compile": "babel --presets es2015,stage-0 -d lib/ src/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dgca/bosque.git"
+  },
+  "author": "Daniel Cortes <hi@dancort.es> (http://dancort.es)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/dgca/bosque/issues"
+  },
+  "homepage": "https://github.com/dgca/bosque#readme",
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-preset-es2015": "^6.24.1",
+    "babel-preset-stage-0": "^6.24.1"
+  },
+  "dependencies": {
+    "es6-symbol": "^3.1.1",
+    "eventemitter3": "^3.0.0",
+    "immutable": "^3.8.2"
+  }
+}
