@@ -3,9 +3,14 @@
   "version": "0.1.2",
   "description": "Simple, Flux state management.",
   "main": "lib/index.js",
+  "babel": {
+    "presets": [
+      "es2015"
+    ]
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "compile": "babel --presets es2015,stage-0 -d lib/ src/"
+    "compile": "babel --presets es2015 -d lib/ src/"
   },
   "repository": {
     "type": "git",
@@ -20,10 +25,12 @@
   "devDependencies": {
     "babel-cli": "^6.26.0",
     "babel-preset-es2015": "^6.24.1",
-    "babel-preset-stage-0": "^6.24.1"
+    "eslint": "^4.15.0",
+    "eslint-config-airbnb-base": "^12.1.0",
+    "eslint-plugin-import": "^2.8.0"
   },
   "dependencies": {
-    "es6-symbol": "^3.1.1",
+    "babel-polyfill": "^6.26.0",
     "eventemitter3": "^3.0.0",
     "immutable": "^3.8.2"
   }

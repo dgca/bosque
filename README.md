@@ -1,2 +1,3 @@
 # bosque
-Simple, Flux state management
+
+Simple, Flux state management system.
