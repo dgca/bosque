@@ -9,7 +9,7 @@ export default function bosque() {
   const emitter = new StateEmitter();
   const stateChangeEvent = Symbol('STATE_CHANGE_EVENT');
 
-  function createActions(...actions) {
+  function makeActions(...actions) {
     return actions.reduce((r, action) => {
       r[action] = Symbol(action);
       return r;
@@ -20,7 +20,7 @@ export default function bosque() {
     emitter.addListener(stateChangeEvent, callback);
   }
 
-  function callAction(action, payload, storeName) {
+  function dispatch(action, payload, storeName) {
     if (storeName && !state.has(storeName)) {
       throw new Error(`Attempted to call action targeted for store '${storeName}', which does not exist!`);
     } else {
@@ -37,6 +37,14 @@ export default function bosque() {
     storeRegistry = storeRegistry.delete(storeName);
   }
 
+  function hydrate(x) {
+    state = state.merge(x);
+  }
+
+  function getState() {
+    return state;
+  }
+
   class Store {
     constructor(name) {
       this.name = name;
@@ -47,10 +55,10 @@ export default function bosque() {
       state = state.set(this.name, Map());
     }
 
-    readData(path, defaultValue) {
+    get(path, defaultValue) {
       const isStringPath = typeof path === 'string';
       if (!(isStringPath || Array.isArray(path))) {
-        throw new Error('First argument passed to Store.readData must be a string or array');
+        throw new Error('First argument passed to Store.get must be a string or array');
       }
       const pathAsArr = isStringPath
         ? [path]
@@ -58,24 +66,24 @@ export default function bosque() {
       return state.getIn([this.name, ...pathAsArr], defaultValue);
     }
 
-    writeData(key, value) {
+    set(key, value) {
       if (typeof key === 'function') {
         const updater = key;
-        state = state.set(this.name, updater(state.get(this.name)))
+        state = state.set(this.name, updater(state.get(this.name)));
       } else {
         state = state.setIn([this.name, key], value);
       }
       emitter.emit(stateChangeEvent);
     }
 
-    handle(action, handler) {
+    addListener(action, handler) {
       emitter.addListener(action, (...args) => {
         const payload = args[0];
         handler.call(this, payload);
       });
     }
 
-    handleTargeted(action, handler) {
+    addTargetedListener(action, handler) {
       emitter.addListener(action, (...args) => {
         const storeName = args[1];
         if (this.name !== storeName) {
@@ -89,7 +97,7 @@ export default function bosque() {
     setInitialData(initialData) {
       if (initialData && !this.initialData) {
         this.initialData = initialData;
-        this.writeData((store) => store.merge(initialData));
+        this.set((store) => store.merge(initialData));
       }
     }
 
@@ -99,29 +107,35 @@ export default function bosque() {
   }
 
   return {
-    createActions,
+    makeActions,
     onStateChange,
-    callAction,
+    dispatch,
     getStore,
     destroyStore,
+    hydrate,
+    getState,
     Store
   };
 }
 
 const {
-  createActions,
+  makeActions,
   onStateChange,
-  callAction,
+  dispatch,
   getStore,
   destroyStore,
+  hydrate,
+  getState,
   Store
 } = bosque();
 
 module.exports = {
-  createActions,
+  makeActions,
   onStateChange,
-  callAction,
+  dispatch,
   getStore,
   destroyStore,
+  hydrate,
+  getState,
   Store
 };
