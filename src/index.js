@@ -2,7 +2,7 @@ import 'babel-polyfill';
 import {Map} from 'immutable';
 import EventEmitter from 'eventemitter3';
 
-export default function bosque() {
+function bosque() {
   let state = Map();
   let storeRegistry = Map();
   class StateEmitter extends EventEmitter {}
@@ -42,7 +42,7 @@ export default function bosque() {
   }
 
   function getState() {
-    return state;
+    return state.toJS();
   }
 
   class Store {
@@ -139,3 +139,5 @@ module.exports = {
   getState,
   Store
 };
+
+export default bosque;
