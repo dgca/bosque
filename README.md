@@ -103,7 +103,7 @@ class Demo extends React.Component {
         <button onClick={() => dispatch(demoActions.INCREMENT)}>
           Increase by one
         </button>
-        <button onClick={() => dispatch(demoActions.INCREMENT)}>
+        <button onClick={() => dispatch(demoActions.DECREMENT)}>
           Decrease by one
         </button>
       </div>
