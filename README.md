@@ -77,7 +77,7 @@ class Demo extends React.Component {
     // have changed. The first argument is the thing that is subscribing, and the second argument
     // is a callback function to call when the Store's data changes. In our case, any time our
     // demoStoreInstance's data changes, we want to rerender our component.
-    demoStoreInstance.subscribe(this, this.forceUpdate);
+    demoStoreInstance.subscribe(this, () => this.forceUpdate());
   }
 
   componentWillUnmount() {
@@ -92,7 +92,7 @@ class Demo extends React.Component {
           Here we're getting the value of counter from our Store (see note on
           getters/setters below)
         */}
-        <p>The counter&apos;s current value is {demoStoreInstance.counter}</p>;
+        <p>The counter&apos;s current value is {demoStoreInstance.counter}</p>
         {/*
           When the user clicks these buttons, we'll call our `dispatch` function with the
           appropriate action, our store will hear the action getting called, and our action
