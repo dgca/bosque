@@ -27,7 +27,7 @@ The following three concepts are the minimum you need to know to get started wit
 
 ## Basic example
 
-```
+```javascript
 import {
   Store,
   makeActions,
@@ -92,7 +92,7 @@ class Demo extends React.Component {
           Here we're getting the value of counter from our Store (see note on
           getters/setters below)
         */}
-        <p>The counter's current value is {demoStoreInstance.counter}</p>;
+        <p>The counter&apos;s current value is {demoStoreInstance.counter}</p>;
         {/*
           When the user clicks these buttons, we'll call our `dispatch` function with the
           appropriate action, our store will hear the action getting called, and our action
