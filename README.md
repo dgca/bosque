@@ -39,8 +39,8 @@ import React from 'react';
 // arguments, and it returns an action for each string provided.
 const demoActions = makeActions('INCREMENT', 'DECREMENT');
 
-// Then, we make a Store. Our store always extends Store. Stores must be instantiated
-// with a unique name.
+// Then, we make a Store subclass to keep track of our data. Our store always extends
+// Store. Stores must be instantiated with a unique name.
 class DemoStore extends Store {
   constructor(name) {
     super(name);
@@ -112,19 +112,181 @@ class Demo extends React.Component {
 }
 ```
 
-*Note about `setInitialData`:* You can pass a regular JS Object, or an Immutable.Map to setInitialData. You don't have to use [Immutable](https://facebook.github.io/immutable-js/) with Bosque, but I recommend considering it. Immutable ensures you're never accidentally mutating store data (say, by getting a store value and modifying it directly instead of ), and it's a
+**Note about `setInitialData`:** You can pass a regular JS Object, or an `Immutable.Map` to setInitialData. You don't have to use [Immutable](https://facebook.github.io/immutable-js/) with Bosque, but I recommend considering it. Immutable ensures you're never accidentally mutating state tree data (say, by getting a an object from a Store and modifying it directly), and it's provides many convenience methods that are nice to have.
 
-*Note about getting and setting Store data:* When you define your store's initial data with `setInitialData`, the Store creates [getters](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/get) and [setters](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/set) for each top-level property. These getters and setters defer to the Store methods `get` and `set`, which either write or retrieve data from the global state tree. Keep in mind that no data is saved on Stores directly, they are just pointers to the state tree. That said, for convenience, you may access and write Store 'data' (again, just pointers to the state tree) using a more familiar syntax. If you'd like, you can not use the getters and setters at all, and read/write data using `Store.get` and `Store.set`, respectively.
+**Note about getting and setting Store data:** When you define your store's initial data with `setInitialData`, the Store creates [getters](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/get) and [setters](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/set) for each top-level property. These getters and setters defer to the Store methods `get` and `set`, which either write or retrieve data from the global state tree. Keep in mind that no data is saved on Stores directly, they are just pointers to the state tree. That said, for convenience, you may access and write Store 'data' (again, just pointers to the state tree) using a more familiar syntax. If you'd like, you can not use the getters and setters at all, and read/write data using `Store.get` and `Store.set`, respectively.
 
 ## Bosque's exports
 
-* bosque (default)
-* makeActions
-* onStateChange
-* dispatch
-* getStore
-* destroyStore
-* hydrate
-* getState
-* configBosque
-* Store
+### `Store`
+
+The `Store` parent class provides methods for reading data from/writing data to the state tree. **Stores are meant to be extended**, with the subclass defining the data it is keeping track of, setting up the listeners for any actions it needs to listen to, and defining the callbacks to be called when those actions are heard.
+
+#### Example:
+
+```javascript
+class TestStore extends Store(name) {
+  constructor(name) {
+    super(name);
+    this.setInitialData({
+      counter: 0
+    });
+    // Assuming you have a `testActions` object, which was made with the `makeActions` function,
+    // you can use the Store.handle method to listen for a given action (e.g. INCREMENT), and
+    // call a callback function in your store when that action is heard
+    this.handle(testActions.INCREMENT, this._increment));
+  }
+
+  _increment() {
+    const newValue = this.counter + 1;
+    this.counter = newValue;
+  }
+}
+
+// If you export your store, you can import it in any file and get the latest 
+// value of `counter` via `testStoreInstace.counter`
+export const testStoreInstance = new TestStore('testStoreInstance');
+```
+
+### `makeActions(action1, action2, ...)`
+
+`makeActions` is a function that takes any number of action names as its arguments, and returns an object made of the action names as its keys, and a unique `Symbol` for the values.
+
+#### Example:
+
+```javascript
+// You can now use `testActions` to either call the given actions, or listen to them
+// in your stores
+export const testActions = makeActions('INCREMENT', 'DECREMENT');
+```
+
+### `dispatch(action, ?payload, ?storeName)`
+
+`dispatch` emits an action that will be heard by any Stores listening for that action. The action is required, a payload to be given to your Store's callback function is optional, and you may specify the name of a store if you only wish for some stores to hear the action (see Store's `addListener` and `addTargetedListener` methods in the `Store` section below).
+
+#### Example:
+
+```javascript
+// When this button is clicked, the `testActions.INCREMENT` will be emitted, and any Stores
+// listening for this action will call their callback handlers
+<button onClick={() => dispatch(testActions.INCREMENT)}>
+  Bump it
+</button>
+```
+
+### `getStore(name: string): Store | undefined`
+
+`getStore` returns a given Store instance by its name. If no Store instance with that name was found, it will return `undefined`;
+
+#### Example:
+
+```javascript
+const someStore = getStore('testStoreInstance');
+console.log(`The testStoreInstance has a counter value of ${someStore.counter}`);
+```
+
+### `destroyStore(storeName)`
+
+`destroyStore` lets you you clean up the state tree by removing the entry for that store's name, and it also removes the Store instance from the Store registry. The function will return true if a Store by that name was found and deletion was successful, and false if no entry for that name was found.
+
+#### Example:
+
+```javascript
+const someStore = getStore('testStoreInstance');
+console.log(someStore.counter); // 0
+destroyStore('testStoreInstance');
+console.log(someStore.counter); // undefined
+```
+
+### `addStateChangeListener(callback)`
+
+`addStateChangeListener` lets you set a callback function that will be called whenever the global state tree has changed. This will happen when _any_ Store has modified the state tree.
+
+#### Example:
+
+```javascript
+function someCoolFunc() {
+  console.log('The state changed!');
+}
+addStateChangeListener(someCoolFunc);
+```
+
+### `removeStateChangeListener(callback)`
+
+`removeStateChangeListener` lets you remove any state change listeners you previously added.
+
+### `hydrate(stateObject)`
+
+`hydrate` takes an object or `Immutable.Map` as its argument, and it will merge this object with the current state tree. This lets you do things like set up server-side rendering by building the state tree on the server, send it to the client, and rebuild the previous state by merging it into the current state.
+
+#### Example:
+
+```javascript
+hydrate({
+  testStoreInstance: {
+    counter: 10
+  },
+  someOtherStore: {
+    animals: ['dog', 'cat', 'horse'],
+    otherValue: 'writing documentation is fun'
+  }
+})
+```
+
+### `getState()`
+
+`getState` returns the current state of the state tree as an Object. Note that the state tree is always an Immutable.Map.
+
+### `configBosque(optionsObject)`
+
+`configBosque` lets you configure some properties of Bosque, by providing a config object. The options you may provide are:
+
+* **defaultSubscriberFunc:** This lets you specify the default callback function invoked when a given Store's values have changed. If no callback function is specified, the default callback will check if the subscriber has a `forceUpdate` method, and if so, it will call it when Store data has changed. This is a convenience for anyone using React. See `Store.subscribe` below.
+* **createGetters:** This lets you specify whether or not you want your Store's initial data properties to create getters for each store property. It defaults to true.
+* **createSetters:** This lets you specify whether or not you want your Store's initial data properties to create setters for each store property. It defaults to true.
+
+### `bosque` (default)
+
+`bosque` returns an object with all aforementioned functionality. This lets you create a separate instance of Bosque. **This is not necessary**, but is provided in case you'd like to have multiple discreet state trees.
+
+## Store methods
+
+### `Store.setInitialData(initialData)`
+
+`setInitialData` defines what data your store will set in the state tree. Pass an Object or `Immutable.Map` to `setInitialData` with any properties your Store will be housing, and default values for each property.
+
+### `Store.addListener(action, callback)`
+
+`addListener` will add a listener for the specified action. When that action is heard, the callback function will be called with the payload that was given to the `dispatch` function, if one was provided. Note that any store that adds a listener via `addListener` method will call its callback function, even if the option store name argument was given to `dispatch`.
+
+### `Store.addTargetedListener(action, callback)`
+
+`addTargetedListener` will add a targeted listener for the specified action. When that action is heard, the callback function will be called with the payload that was given to the `dispatch` function, if one was provided. Unlike `addListener`, the callback will only be called if the Store instance's name matches the store name argument given to `dispatch`.
+
+### `Store.makeSetter(storeProperty)`
+
+`makeSetter` is a shorthand for creating action listener callbacks. `makeSetter` returns a function that will update a given Store property with whatever payload was passed along with an action being listened to. Often times, your callback will simply listen for an action, and update its Store's value with the value passed to it. To simplify this, you can just write (for example) `this.handle(testActions.SET_VALUE, this.makeSetter('value'))`.
+
+### `Store.get(pathToProperty)`
+
+`get` returns the value of Store's state tree property. When looking up the value of a property, simply pass a the name of that property as a tring. Alternatively, you may pass an array of strings, in order to do a deeply nested object lookup.
+
+### `Store.set(updater, value)`
+
+`set` allows you to set the value of a Store's state tree property. To set the value of a property directly, simply use a string for the `updater` argument. Alternatively, `updater` may be an array of strings, in order update the value of a deeply nested object.
+
+### `Store.subscribe(subscriber, callback)`
+
+Store instances maintain a list of subscribers and their callbacks on themselves. `subscribe` allows you to add subhscribers to this list. After a Store updates its state tree data, the Store will iterate through its subscribers and call each subscriber's callback. The callback will be given the subscriber as its argument.
+
+If you're using React, and you want a component to update itself after the Store updates, you may omit the callback argument, as the default callback will look for a `forceUpdate` method on the subscriber, and call it, if one exists.
+
+If you're using another framework, and you want the convenience of omitting the callback argument,you can override the default with the `configBosque` function.
+
+### `Store.unsubscribe(unsubscribe)`
+
+`unsubscribe` removes a subscriber from a Store instance.
+
+### `Store.getName()`
+
+`getName` returns the name of a Store instance.

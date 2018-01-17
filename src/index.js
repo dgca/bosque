@@ -29,7 +29,11 @@ export default function bosque() {
     }, {});
   }
 
-  function onStateChange(callback) {
+  function addStateChangeListener(callback) {
+    emitter.addListener(stateChangeEvent, callback);
+  }
+
+  function removeStateChangeListener(callback) {
     emitter.addListener(stateChangeEvent, callback);
   }
 
@@ -46,8 +50,12 @@ export default function bosque() {
   }
 
   function destroyStore(storeName) {
+    if (!state.has(storeName)) {
+      return false;
+    }
     state = state.delete(storeName);
     storeRegistry = storeRegistry.delete(storeName);
+    return true;
   }
 
   function hydrate(x) {
@@ -173,7 +181,8 @@ export default function bosque() {
 
   return {
     makeActions,
-    onStateChange,
+    addStateChangeListener,
+    removeStateChangeListener,
     dispatch,
     getStore,
     destroyStore,
@@ -186,7 +195,8 @@ export default function bosque() {
 
 export const {
   makeActions,
-  onStateChange,
+  addStateChangeListener,
+  removeStateChangeListener,
   dispatch,
   getStore,
   destroyStore,

@@ -1,6 +1,6 @@
 {
   "name": "bosque",
-  "version": "0.2.4",
+  "version": "0.3.0",
   "description": "Simple, Flux state management.",
   "main": "lib/index.js",
   "babel": {
@@ -9,7 +9,6 @@
     ]
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "compile": "babel --presets es2015 -d lib/ src/"
   },
   "repository": {
