@@ -315,6 +315,10 @@ const {
 /* harmony export (immutable) */ __webpack_exports__["Store"] = Store;
 
 
+if (typeof window !== 'undefined') {
+  window.bosque = bosque;
+}
+
 
 /***/ }),
 /* 2 */

@@ -1,6 +1,6 @@
 {
   "name": "bosque",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Simple, Flux state management.",
   "main": "lib/index.js",
   "babel": {

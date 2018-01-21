@@ -205,3 +205,7 @@ export const {
   configBosque,
   Store
 } = bosque();
+
+if (typeof window !== 'undefined') {
+  window.bosque = bosque;
+}
