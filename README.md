@@ -174,7 +174,7 @@ export const testActions = makeActions('INCREMENT', 'DECREMENT');
 </button>
 ```
 
-### `getStore(name: string): Store | undefined`
+### `getStore(name)`
 
 `getStore` returns a given Store instance by its name. If no Store instance with that name was found, it will return `undefined`;
 
