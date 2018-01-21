@@ -1,8 +1,8 @@
-import 'babel-polyfill';
 import {
   Map,
   List
 } from 'immutable';
+import Symbol from 'es6-symbol';
 import EventEmitter from 'eventemitter3';
 
 export default function bosque() {
